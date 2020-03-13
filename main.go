@@ -62,7 +62,6 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", homePage)
 	r.HandleFunc("/result", homeResult)
-	r.HandleFunc("/result2", homeResult)
 	/*
 		http.HandleFunc("/", homePage)
 		http.HandleFunc("/result/pokemon={id}", homePage)
