@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"path"
+	"strconv"
 
 	L "./code"
 
@@ -18,6 +19,8 @@ type RsData struct {
 	BackDefault  string
 	FrontShiny   string
 	BackShiny    string
+	DataBefore   int
+	DataAfter    int
 }
 
 //var dataPokemon *L.Response
@@ -40,8 +43,12 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func homeResult(w http.ResponseWriter, r *http.Request) {
-	data := L.GetPokeData(r.FormValue("pokemon"))
-	dateNew := RsData{data.Name, data.Sprites.FrontDefault, data.Sprites.BackDefault, data.Sprites.FrontShiny, data.Sprites.BackShiny}
+	var input1 = r.FormValue("pokemon")
+	data := L.GetPokeData(input1)
+	intData, _ := strconv.Atoi(input1)
+	prevIn := intData - 1
+	nextIn := intData + 1
+	dateNew := RsData{data.Name, data.Sprites.FrontDefault, data.Sprites.BackDefault, data.Sprites.FrontShiny, data.Sprites.BackShiny, prevIn, nextIn}
 	var filepath = path.Join("views", "result.html")
 	var tmpl, err = template.ParseFiles(filepath)
 	if err != nil {
