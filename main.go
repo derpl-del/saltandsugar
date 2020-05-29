@@ -1,13 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
 	"path"
 	"strconv"
 
-	L "./code"
+	L "./code/getdata"
+	L2 "./code/write"
 
 	"github.com/gorilla/mux"
 )
@@ -49,13 +51,14 @@ func homeResult(w http.ResponseWriter, r *http.Request) {
 	prevIn := intData - 1
 	nextIn := intData + 1
 	dateNew := RsData{data.Name, data.Sprites.FrontDefault, data.Sprites.BackDefault, data.Sprites.FrontShiny, data.Sprites.BackShiny, prevIn, nextIn}
+	b, _ := json.Marshal(dateNew)
+	L2.LoggingWrite(string(b))
 	var filepath = path.Join("views", "result.html")
 	var tmpl, err = template.ParseFiles(filepath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	err = tmpl.Execute(w, dateNew)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -75,6 +78,7 @@ func main() {
 		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("hdmonochrome"))))
 	*/
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("hdmonochrome"))))
+	fmt.Println("server started at localhost:9000")
 	fmt.Println("server started at localhost:9000")
 	http.ListenAndServe(":9000", r)
 }
