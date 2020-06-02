@@ -8,6 +8,7 @@ import (
 	"path"
 	"strconv"
 
+	L3 "./code/database"
 	L "./code/getdata"
 	L2 "./code/write"
 
@@ -23,6 +24,23 @@ type RsData struct {
 	BackShiny    string
 	DataBefore   int
 	DataAfter    int
+}
+
+//ReturnData for validation data
+func ReturnData(validation bool, input1 string) RsData {
+	if validation == true {
+		data := L.GetPokeData(input1)
+		intData, _ := strconv.Atoi(input1)
+		prevIn := intData - 1
+		nextIn := intData + 1
+		dateNew := RsData{data.Name, data.Sprites.FrontDefault, data.Sprites.BackDefault, data.Sprites.FrontShiny, data.Sprites.BackShiny, prevIn, nextIn}
+		L3.InsData(data.Name, data.Sprites.FrontDefault, data.Sprites.BackDefault, data.Sprites.FrontShiny, data.Sprites.BackShiny, prevIn, nextIn)
+		return dateNew
+	}
+	_, result2, result3, result4, result5, result6, result7, result8 := L3.GetData(input1)
+	dateNew := RsData{result2, result3, result4, result5, result6, result7, result8}
+	return dateNew
+
 }
 
 //var dataPokemon *L.Response
@@ -45,12 +63,11 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func homeResult(w http.ResponseWriter, r *http.Request) {
+	var validation1 bool
 	var input1 = r.FormValue("pokemon")
-	data := L.GetPokeData(input1)
-	intData, _ := strconv.Atoi(input1)
-	prevIn := intData - 1
-	nextIn := intData + 1
-	dateNew := RsData{data.Name, data.Sprites.FrontDefault, data.Sprites.BackDefault, data.Sprites.FrontShiny, data.Sprites.BackShiny, prevIn, nextIn}
+	validation1 = L3.ValidationData(input1)
+	fmt.Printf("The result validation is: %v\n", validation1)
+	dateNew := ReturnData(validation1, input1)
 	b, _ := json.Marshal(dateNew)
 	L2.LoggingWrite(string(b))
 	var filepath = path.Join("views", "result.html")
@@ -70,6 +87,7 @@ func homeResult(w http.ResponseWriter, r *http.Request) {
 func main() {
 	//var responseObject Response = getDataPok()
 	r := mux.NewRouter()
+	L3.GetSysDate()
 	r.HandleFunc("/", homePage)
 	r.HandleFunc("/result", homeResult)
 	/*
@@ -78,7 +96,6 @@ func main() {
 		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("hdmonochrome"))))
 	*/
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("hdmonochrome"))))
-	fmt.Println("server started at localhost:9000")
 	fmt.Println("server started at localhost:9000")
 	http.ListenAndServe(":9000", r)
 }
